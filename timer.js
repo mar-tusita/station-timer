@@ -120,15 +120,22 @@ class AudioManager {
   unlock() {
     for (const a of this.clips.values()) {
       a.muted = true;
+      a._unlocking = true;
+      // unlock中に本再生が始まっていたら、後始末で止めない
+      const reset = () => {
+        if (!a._unlocking) return;
+        a._unlocking = false;
+        a.pause(); a.currentTime = 0; a.muted = false;
+      };
       const p = a.play();
-      const reset = () => { a.pause(); a.currentTime = 0; a.muted = false; };
-      if (p && p.then) p.then(reset, () => { a.muted = false; }); else reset();
+      if (p && p.then) p.then(reset, () => { a._unlocking = false; a.muted = false; }); else reset();
     }
   }
 
   play(name) {
     const a = this.clips.get(name);
     if (!a) return;
+    a._unlocking = false;
     a.muted = false;
     a.currentTime = 0;
     const p = a.play();
