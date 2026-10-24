@@ -117,3 +117,13 @@ time,message,audio,candidate,duration
 - CSVの列名不足、時刻の形式不正、同一時刻の重複などがあると、問題の内容が画面に表示されます。CSVを修正して再度読み込んでください。
 - 音声ファイルが見つからない場合は警告として表示されます。音声ファイル名や`audio`フォルダーの場所を確認してください。音声が不要なら、CSVで`audio`列を省略するか該当セルを空欄にします。
 - ブラウザーが音声再生を許可しない場合は、開始または再開ボタンを押してからご利用ください。
+
+## 自動テスト
+
+READMEの仕様に基づくブラウザー受け入れテストを実行するには、Python 3を用意し、プロジェクトフォルダーで次のコマンドを実行します。
+
+```sh
+python -m pip install -r requirements-test.txt
+python -m playwright install chromium
+python -m unittest discover -s tests -v
+```
