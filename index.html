@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>試験進行タイマー</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="stage">
+  <div id="candidate" class="candidate" hidden></div>
+  <div id="timer" class="timer" aria-live="off">00:00:00</div>
+  <div id="message" class="message">CSVを読み込んでください</div>
+  <div id="errors" class="errors" role="alert" hidden></div>
+</main>
+<nav id="controls" class="controls">
+  <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
+  <button id="btnLoad" type="button">CSV読込</button>
+  <button id="btnStart" type="button" disabled>開始</button>
+  <button id="btnPause" type="button" disabled>一時停止</button>
+  <button id="btnResume" type="button" disabled>再開</button>
+  <button id="btnStop" type="button" disabled>停止</button>
+  <button id="btnFullscreen" type="button">全画面表示</button>
+  <span id="status" class="status"></span>
+</nav>
+<script src="timer.js"></script>
+</body>
+</html>

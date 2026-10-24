@@ -1,0 +1,5 @@
+time,message,audio
+00:00,はじめてください,start.mp3
+02:30,残り30秒です,remain30.mp3
+03:00,終了です,end.mp3
+03:15,はじめてください,start.mp3
