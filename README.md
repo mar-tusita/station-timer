@@ -25,9 +25,9 @@ CSVの1行目に列名を書き、2行目以降にイベントを記入します
 
 ```csv
 time,message,audio
-00:00,試験を始めてください,start.mp3
-02:30,残り30秒です,remain30.mp3
-03:00,終了です,end.mp3
+00:00,試験を始めてください,bell1.wav
+02:30,残り30秒です,bell2.wav
+03:00,終了です,bell3.wav
 ```
 
 ### 列の説明
@@ -53,8 +53,8 @@ time,message
 
 ```csv
 time,message,audio
-00:00,試験を始めてください,start.mp3
-02:30,残り30秒です,remain30.mp3
+00:00,試験を始めてください,bell1.wav
+02:30,残り30秒です,bell2.wav
 03:00,終了です
 ```
 
@@ -72,8 +72,8 @@ time,message,duration
 
 ```csv
 time,message,audio,candidate,duration
-00:00,試験を始めてください,start.mp3,受験番号 001,10
-02:30,残り30秒です,remain30.mp3
+00:00,試験を始めてください,bell1.wav,受験番号 001,10
+02:30,残り30秒です,bell2.wav
 03:00,終了です,,,5
 03:15,お疲れさまでした
 ```
@@ -123,7 +123,7 @@ time,message,audio,candidate,duration
 
 ## 音声ファイル
 
-音声ファイルはプロジェクト内の`audio`フォルダーに置き、CSVの`audio`列にはファイル名と拡張子を記入します。たとえば`audio/start.mp3`を使う場合、CSVには`start.mp3`と記入します。
+音声ファイルはプロジェクト内の`audio`フォルダーに置き、CSVの`audio`列にはファイル名と拡張子を記入します。たとえば`audio/bell1.wav`を使う場合、CSVには`bell1.wav`と記入します。
 
 指定した音声ファイルが見つからない場合は警告が表示されます。警告が出ても、CSVに問題がなければタイマーは読み込まれ、メッセージ表示も利用できます。音声を再生しないイベントでは、`audio`を空欄にするか列を省略してください。
 
@@ -183,7 +183,7 @@ python -m unittest discover -s tests -v
 
 ### サンプル音声の再生成
 
-サンプル音声は、録音ではなくプログラムで生成したものです。生成スクリプトは`tools`フォルダーにあります。
+サンプル音声は、録音ではなくプログラムで生成したものです。生成スクリプトは`tools`フォルダーにあります。自動テストと同様に、GitHubリポジトリにのみ含まれ、リリース用のZIPには含まれません。
 
 - ベル音: `tools/generate_bells.py`。Python 3の標準ライブラリだけで動作し、倍音を重ねた波形を合成します。音の高さや間隔は、スクリプト冒頭の`BASE_FREQ`、`PARTIALS`、`INTERVAL`で変更できます。
 
