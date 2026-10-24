@@ -127,6 +127,25 @@ time,message,audio,candidate,duration
 
 指定した音声ファイルが見つからない場合は警告が表示されます。警告が出ても、CSVに問題がなければタイマーは読み込まれ、メッセージ表示も利用できます。音声を再生しないイベントでは、`audio`を空欄にするか列を省略してください。
 
+### サンプル音声
+
+`audio`フォルダーには、次のサンプル音声(WAV形式)が入っています。
+
+| ファイル | 内容 | 用途 |
+| --- | --- | --- |
+| `bell1.wav` | ベル音1回 | プレゼンテーションなど |
+| `bell2.wav` | ベル音2回 | プレゼンテーションなど |
+| `bell3.wav` | ベル音3回 | プレゼンテーションなど |
+| `start.wav` | 「はじめてください」 | OSCEなど |
+| `remain30.wav` | 「残り30秒です」 | OSCEなど |
+| `end.wav` | 「時間です、終了してください」 | OSCEなど |
+
+CSVには、`bell1.wav`のように拡張子付きで記入します。
+
+### 音声のライセンス
+
+ベル音は、このプロジェクトのスクリプトで合成したもので、プロジェクトと同じBSD 2-Clause Licenseで提供します。音声は、Kokoro-82M(Apache License 2.0)で生成しています。このプロジェクトでは、生成した音声にクレジット表記などの追加条件を設けていません。ただし、モデルの学習データには、CC BYのデータ(Koniwa、SIWIS)が含まれていると、モデルの配布ページに記載されています。利用条件の最新の内容は、[モデルのページ](https://huggingface.co/hexgrad/Kokoro-82M)で確認してください。
+
 ## 操作方法
 
 | ボタン | 動作 |
@@ -146,9 +165,13 @@ time,message,audio,candidate,duration
 - 音声ファイルが見つからない場合は警告として表示されます。音声ファイル名や`audio`フォルダーの場所を確認してください。音声が不要なら、CSVで`audio`列を省略するか該当セルを空欄にします。
 - ブラウザーが音声再生を許可しない場合は、開始または再開ボタンを押してからご利用ください。
 
-## 自動テスト(開発者向け)
+## 開発者向け
 
-この節は開発者向けです。タイマーを利用するだけなら読む必要はありません。自動テストはGitHubリポジトリにのみ含まれ、リリース用のZIPには含まれません。
+この節は開発者向けです。タイマーを利用するだけなら読む必要はありません。
+
+### 自動テスト
+
+自動テストはGitHubリポジトリにのみ含まれ、リリース用のZIPには含まれません。
 
 READMEの仕様に基づくブラウザー受け入れテストを実行するには、Python 3を用意し、リポジトリのルートフォルダーで次のコマンドを実行します。
 
@@ -157,3 +180,22 @@ python -m pip install -r requirements-test.txt
 python -m playwright install chromium
 python -m unittest discover -s tests -v
 ```
+
+### サンプル音声の再生成
+
+サンプル音声は、録音ではなくプログラムで生成したものです。生成スクリプトは`tools`フォルダーにあります。
+
+- ベル音: `tools/generate_bells.py`。Python 3の標準ライブラリだけで動作し、倍音を重ねた波形を合成します。音の高さや間隔は、スクリプト冒頭の`BASE_FREQ`、`PARTIALS`、`INTERVAL`で変更できます。
+
+  ```sh
+  python tools/generate_bells.py
+  ```
+
+- 音声: `tools/generate_voices.py`。音声合成モデル[Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)(Apache License 2.0)の日本語の声`jf_alpha`を使います。文言、声、無音の長さは、スクリプト冒頭で変更できます。事前に次のライブラリをインストールしてください。初回の実行時にモデルがダウンロードされます。
+
+  ```sh
+  python -m pip install kokoro soundfile pyopenjtalk-plus fugashi jaconv mojimoji unidic-lite
+  python tools/generate_voices.py
+  ```
+
+  Windowsでは、`pip install "misaki[ja]"`がビルドに失敗することがあります。その場合は、上のようにビルド済みの`pyopenjtalk-plus`を使ってください。
