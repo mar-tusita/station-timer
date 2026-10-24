@@ -53,8 +53,7 @@ class CsvLoader {
     if (missing.length) {
       return { events: [], errors: [`CSVの見出し行が不正です。不足している列: ${missing.join(", ")}`] };
     }
-    const events = [];
-    const seen = new Map();
+    const byTime = new Map();
     for (let i = 1; i < rows.length; i++) {
       const lineNo = i + 1;
       const r = rows[i];
@@ -69,11 +68,6 @@ class CsvLoader {
         errors.push(`${lineNo}行目: time列が不正です ("${rec.time}")。MM:SS または HH:MM:SS で指定してください`);
         continue;
       }
-      if (seen.has(seconds)) {
-        errors.push(`${lineNo}行目: 同一時刻 (${formatTime(seconds)}) のイベントが重複しています (${seen.get(seconds)}行目)`);
-        continue;
-      }
-      seen.set(seconds, lineNo);
       let duration = null;
       if (rec.duration) {
         duration = /^\d+(?:\.\d+)?$/.test(rec.duration) ? Number(rec.duration) : NaN;
@@ -82,12 +76,13 @@ class CsvLoader {
           continue;
         }
       }
-      events.push({
+      // 同一時刻が複数ある場合は、CSV内で最後に書かれたイベントだけを残す
+      byTime.set(seconds, {
         time: seconds, message: rec.message, audio: rec.audio || "",
         candidate: rec.candidate || "", duration, line: lineNo,
       });
     }
-    events.sort((a, b) => a.time - b.time);
+    const events = [...byTime.values()].sort((a, b) => a.time - b.time);
     return { events, errors };
   }
 }

@@ -134,7 +134,6 @@ class AcceptanceTests(unittest.TestCase):
             "time\n00:00,メッセージ列がない",
             "time,message\n不正な時刻,イベント",
             "time,message\n00:60,範囲外の秒",
-            "time,message\n00:01,最初\n00:01,重複",
             "time,message,duration\n00:00,不正なduration,0",
             "time,message,duration\n00:00,負のduration,-1",
             "time,message,duration\n00:00,文字のduration,abc",
@@ -473,7 +472,6 @@ class AcceptanceTests(unittest.TestCase):
     def test_csv_parser_reports_row_errors_with_line_numbers(self):
         cases = {
             "time,message\n,時刻が空欄": "2行目",
-            "time,message\n00:00,A\n00:00,B": "3行目",
             "time,message\n00:00,A,余分な列": "2行目",
             "time,message,duration\n00:00,A,0": "2行目",
             "time,message,duration\n00:00,A,0.0": "2行目",
@@ -487,6 +485,64 @@ class AcceptanceTests(unittest.TestCase):
                 result = self.parse_csv(text)
                 self.assertEqual(len(result["errors"]), 1)
                 self.assertIn(line, result["errors"][0])
+
+    def test_csv_parser_keeps_only_the_last_event_for_the_same_time(self):
+        result = self.parse_csv(
+            "time,message,audio,candidate,duration\n"
+            "00:00,最初,a.wav,受験番号 001,5\n"
+            "00:05,別の時刻\n"
+            "0:00,最後,,,\n"
+        )
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(
+            [(e["time"], e["message"]) for e in result["events"]],
+            [(0, "最後"), (5, "別の時刻")],
+        )
+        last = result["events"][0]
+        self.assertEqual(
+            (last["audio"], last["candidate"], last["duration"]), ("", "", None)
+        )
+
+    def test_csv_parser_keeps_the_last_of_three_events_at_the_same_time(self):
+        result = self.parse_csv(
+            "time,message\n01:00,一つ目\n00:00:00,別\n1:00,二つ目\n01:00,三つ目\n"
+        )
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(
+            [(e["time"], e["message"]) for e in result["events"]],
+            [(0, "別"), (60, "三つ目")],
+        )
+
+    def test_invalid_row_is_still_an_error_even_if_its_time_is_duplicated(self):
+        result = self.parse_csv(
+            "time,message,duration\n00:00,A\n00:00,B,abc\n00:00,C\n"
+        )
+        self.assertEqual(len(result["errors"]), 1)
+        self.assertIn("3行目", result["errors"][0])
+
+    def test_only_the_last_event_for_the_same_time_runs(self):
+        self.route_tone(frames=8000 * 3)
+        self.load_csv(
+            "time,message,audio,candidate\n"
+            "00:00,無視される,tone.wav,無視される候補\n"
+            "00:00,実行される,,実行される候補\n"
+        )
+        expect(self.page.locator("#status")).to_contain_text("1件")
+        expect(self.page.locator("#errors")).to_be_hidden()
+        self.start_timer()
+        expect(self.page.locator("#message")).to_have_text("実行される")
+        expect(self.page.locator("#candidate")).to_have_text("実行される候補")
+        self.page.wait_for_timeout(700)
+        self.assertEqual(self.audible_play_count(), 0)
+
+    def test_audio_of_an_ignored_event_is_not_loaded_or_warned(self):
+        self.load_csv(
+            "time,message,audio\n"
+            "00:00,無視される,missing.wav\n"
+            "00:00,実行される,\n"
+        )
+        expect(self.page.locator("#status")).to_contain_text("1件")
+        expect(self.page.locator("#errors")).to_be_hidden()
 
     def test_csv_parser_reports_every_invalid_row(self):
         result = self.parse_csv("time,message\n不正,A\n00:01,B\n00:60,C\n")
