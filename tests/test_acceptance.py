@@ -83,7 +83,7 @@ class AcceptanceTests(unittest.TestCase):
         self.start_timer()
         expect(self.page.locator("#message")).to_have_text("並び替え")
         expect(self.page.locator("#candidate")).to_have_text("追加情報")
-        expect(self.page.locator("#message")).to_have_text("待機中", timeout=2000)
+        expect(self.page.locator("#message")).to_have_text("", timeout=2000)
         expect(self.page.locator("#candidate")).to_be_visible()
 
     def test_zero_time_and_unsorted_events_run_in_time_order(self):
@@ -120,7 +120,7 @@ class AcceptanceTests(unittest.TestCase):
         self.start_timer()
         expect(self.page.locator("#message")).to_have_text("前半,終了です")
         expect(self.page.locator("#candidate")).to_have_text("受験番号 001")
-        expect(self.page.locator("#message")).to_have_text("待機中", timeout=2000)
+        expect(self.page.locator("#message")).to_have_text("", timeout=2000)
         expect(self.page.locator("#candidate")).to_be_visible()
         expect(self.page.locator("#message")).to_have_text(
             "次のイベント", timeout=3000
@@ -151,7 +151,7 @@ class AcceptanceTests(unittest.TestCase):
         expect(self.page.locator("#message")).to_have_text("一時表示")
 
         self.page.get_by_role("button", name="再開").click()
-        expect(self.page.locator("#message")).to_have_text("待機中", timeout=2000)
+        expect(self.page.locator("#message")).to_have_text("", timeout=2000)
 
     def test_stop_resets_timer_and_last_event_does_not_stop_it(self):
         self.load_csv("time,message\n00:00,最初のイベント")

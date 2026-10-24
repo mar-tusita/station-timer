@@ -250,7 +250,7 @@ class App {
     this.timer = new TimerController(this.scheduler, this.audio, {
       setTime: (t) => { const s = formatTime(t); if (this.el.timer.textContent !== s) this.el.timer.textContent = s; },
       setEvent: (ev) => this.showEvent(ev),
-      clearMessage: () => { this.el.message.textContent = "待機中"; }, // candidateは残す
+      clearMessage: () => { this.el.message.textContent = ""; }, // candidateは残す
       onState: (s) => this.updateButtons(s),
     });
     this.loaded = false;
