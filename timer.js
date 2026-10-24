@@ -326,7 +326,7 @@ class App {
     this.scheduler.setEvents(events);
     this.events = events;
     this.showErrors([]);
-    const failed = await this.audio.preload(events.map((ev) => ev.audio));
+    const failed = (await this.audio.preload(events.map((ev) => ev.audio))).filter(Boolean);
     const warns = failed.map((n) => `音声ファイルが見つかりません: audio/${n}`);
     if (warns.length) this.showErrors(warns, true);
     this.loaded = true;

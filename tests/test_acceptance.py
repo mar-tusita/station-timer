@@ -181,6 +181,24 @@ class AcceptanceTests(unittest.TestCase):
         self.start_timer()
         expect(self.page.locator("#message")).to_have_text("音声なしでも表示")
 
+    def test_no_audio_warning_when_audio_loads_or_is_blank(self):
+        self.page.route(
+            "**/audio/tone.wav",
+            lambda route: route.fulfill(
+                status=200,
+                content_type="audio/wav",
+                body=make_tone_wav(),
+            ),
+        )
+        self.load_csv(
+            "time,message,audio\n"
+            "00:00,音声あり,tone.wav\n"
+            "00:01,音声なし,\n"
+        )
+        expect(self.page.locator("#status")).to_contain_text("2件")
+        expect(self.page.locator("#errors")).to_be_hidden()
+        expect(self.page.locator("#errors")).not_to_contain_text("null")
+
     def test_audio_event_requests_file_from_audio_folder(self):
         self.page.route(
             "**/audio/tone.wav",
@@ -190,9 +208,8 @@ class AcceptanceTests(unittest.TestCase):
                 body=make_tone_wav(),
             ),
         )
-        self.load_csv("time,message,audio\n00:00,音声イベント,tone.wav")
         with self.page.expect_request("**/audio/tone.wav", timeout=5000):
-            self.start_timer()
+            self.load_csv("time,message,audio\n00:00,音声イベント,tone.wav")
 
     def test_fullscreen_can_be_toggled(self):
         self.page.get_by_role("button", name="全画面表示").click()
