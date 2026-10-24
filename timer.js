@@ -74,9 +74,17 @@ class CsvLoader {
         continue;
       }
       seen.set(seconds, lineNo);
+      let duration = null;
+      if (rec.duration) {
+        duration = /^\d+(?:\.\d+)?$/.test(rec.duration) ? Number(rec.duration) : NaN;
+        if (!(duration > 0)) {
+          errors.push(`${lineNo}行目: duration列が不正です ("${rec.duration}")。0より大きい秒数で指定してください`);
+          continue;
+        }
+      }
       events.push({
         time: seconds, message: rec.message, audio: rec.audio || "",
-        candidate: rec.candidate || "", line: lineNo,
+        candidate: rec.candidate || "", duration, line: lineNo,
       });
     }
     events.sort((a, b) => a.time - b.time);
@@ -163,6 +171,7 @@ class TimerController {
     this.base = 0;       // 一時停止までの累積ms
     this.startedAt = 0;
     this.handle = null;
+    this.clearAt = null; // メッセージを消す経過秒 (null = 消さない)
   }
 
   elapsedSec() {
@@ -173,6 +182,7 @@ class TimerController {
   start() {
     this.scheduler.reset();
     this.base = 0;
+    this.clearAt = null;
     this.ui.setEvent(null);
     this.resume();
   }
@@ -201,6 +211,7 @@ class TimerController {
     this.base = 0;
     this.audio.stopAll();
     this.scheduler.reset();
+    this.clearAt = null;
     this.ui.setTime(0);
     this.ui.setEvent(null);
     this.ui.onState(this.state);
@@ -214,7 +225,12 @@ class TimerController {
       // 複数同時到達時(タブ遅延など)は最新のイベントのみ表示・再生
       const ev = due[due.length - 1];
       this.ui.setEvent(ev);
+      this.clearAt = ev.duration ? ev.time + ev.duration : null;
       if (ev.audio) this.audio.play(ev.audio);
+    }
+    if (this.clearAt !== null && t >= this.clearAt) {
+      this.clearAt = null;
+      this.ui.clearMessage();
     }
   }
 }
@@ -234,6 +250,7 @@ class App {
     this.timer = new TimerController(this.scheduler, this.audio, {
       setTime: (t) => { const s = formatTime(t); if (this.el.timer.textContent !== s) this.el.timer.textContent = s; },
       setEvent: (ev) => this.showEvent(ev),
+      clearMessage: () => { this.el.message.textContent = "待機中"; }, // candidateは残す
       onState: (s) => this.updateButtons(s),
     });
     this.loaded = false;
