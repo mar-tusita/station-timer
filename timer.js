@@ -19,7 +19,7 @@ function formatTime(totalSeconds) {
 
 /** CSV の解析と検証。列は見出し行で名前解決するため列追加に強い (例: candidate) */
 class CsvLoader {
-  static REQUIRED = ["time", "message", "audio"];
+  static REQUIRED = ["time", "message"];
 
   static parseRows(text) {
     const rows = [];
@@ -75,7 +75,7 @@ class CsvLoader {
       }
       seen.set(seconds, lineNo);
       events.push({
-        time: seconds, message: rec.message, audio: rec.audio,
+        time: seconds, message: rec.message, audio: rec.audio || "",
         candidate: rec.candidate || "", line: lineNo,
       });
     }
